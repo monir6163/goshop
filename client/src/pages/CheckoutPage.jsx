@@ -99,7 +99,10 @@ export default function CheckoutPage() {
       });
       const {data:resData} = res;
       loadStripePromise.redirectToCheckout({sessionId:resData.id})
-      fetchAllOrders()
+      if (featchCartData) {
+        featchCartData();
+        fetchAllOrders();
+      }
     } catch (error) {
       axiosToastError(error)
     }finally{

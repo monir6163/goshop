@@ -61,7 +61,10 @@ export default function ProductListPage() {
     );
     setDisplaySubCategory(subCat);
   }, [params, page, allSubCategory]);
-
+  // top scroll
+   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <section className="sticky top-24 lg:top-20 bg-white">
       <div className="container sticky top-24 mx-auto grid grid-cols-[90px,1fr] md:grid-cols-[200px,1fr] lg:grid-cols-[210px,1fr]">
