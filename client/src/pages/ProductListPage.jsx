@@ -80,7 +80,7 @@ export default function ProductListPage() {
 
   // Scroll to the top when params change
   useEffect(() => {
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [params]);
 
   return (

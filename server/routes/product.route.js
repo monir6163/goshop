@@ -6,6 +6,7 @@ import {
   getProductByCatAndSubCat,
   getProductById,
   getProducts,
+  getRelatedProducts,
   searchProduct,
   storeProduct,
   UpdateProductDetails,
@@ -34,6 +35,8 @@ productRouter.delete(
 );
 
 productRouter.post("/update-product-status", authProtect, authorize('Admin'), UpdateProductStatus)
+
+productRouter.post("/related-products", getRelatedProducts);
 
 // search product query string
 productRouter.get("/search-product", searchProduct);

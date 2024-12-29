@@ -12,6 +12,7 @@ import AddToCartButton from "../components/AddToCartButton";
 import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import Loading from "../utils/Loading";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
+import RelatedProducts from "../components/RelatedProducts";
 export default function ProductDisplayPage() {
   const [productData, setProductData] = useState({
     name: "",
@@ -54,8 +55,8 @@ export default function ProductDisplayPage() {
 
   // top scroll
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [productData]);
   return (
     <>
       {loading ? (
@@ -314,26 +315,7 @@ export default function ProductDisplayPage() {
           {/* related product */}
           <section className="container mx-auto p-4">
             <h1 className="text-lg font-semibold">Related Products</h1>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              <div className="bg-white shadow-md rounded p-4">
-                <div className="bg-gray-200 w-full h-40 rounded"></div>
-                <div className="my-2">
-                  <p className="text-xs text-gray-500">Product Name</p>
-                  <p className="text-sm font-semibold">Product Name</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-xs text-gray-500">Price:</p>
-                  <p className="text-sm font-semibold text-green-800">Rs. 100</p>
-                  <div className="text-sm text-gray-500 line-through">Rs. 200</div>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">(Inclusive of all taxes)</p>
-                </div>
-                <div className="my-4">
-                  <AddToCartButton />
-                </div>
-              </div>
-            </div>
+            <RelatedProducts category_id={productData?.category_id} subCategory_id={productData?.subCategory_id} brand_id={productData?.brand_id}/>
           </section>
         </>
       )}

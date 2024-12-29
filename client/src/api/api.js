@@ -143,6 +143,10 @@ const apiSummary = {
     url: "/product/get-products",
     method: "GET",
   },
+  getRelatedProducts: {
+    url: "/product/related-products",
+    method: "POST",
+  },
 
   // get category products home page
   getCategoryProducts: {
