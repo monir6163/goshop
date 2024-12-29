@@ -93,6 +93,9 @@ function GlobalProvider({ children }) {
       
     }
   };
+
+
+
   //after logout clear
   useEffect(() => {
     featchCartData();

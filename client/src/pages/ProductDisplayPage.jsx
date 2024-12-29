@@ -13,6 +13,9 @@ import { DisplayPriceInRupees } from "../utils/DisplayPriceInRupees";
 import Loading from "../utils/Loading";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
 import RelatedProducts from "../components/RelatedProducts";
+import ReviewData from "../components/ReviewData";
+import StarRatings from "react-star-ratings";
+import { axiosToastError } from "../utils/axiosToastError";
 export default function ProductDisplayPage() {
   const [productData, setProductData] = useState({
     name: "",
@@ -23,6 +26,7 @@ export default function ProductDisplayPage() {
   });
   const [thumbnail, setThumbnail] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [reviews, setReviews] = useState([]);
   const params = useParams();
   const imgContainer = useRef(null);
   const productId = params?.product?.split("-")?.slice(-1)[0];
@@ -44,15 +48,31 @@ export default function ProductDisplayPage() {
   };
   useEffect(() => {
     fetchProductById();
+    if (productId) {
+      featchReview();
+    }
   }, [params]);
 
+  const featchReview = async () => {
+    try {
+      const { data: response } = await Axios({
+        ...apiSummary.getAllProductReviews,
+        url: `${apiSummary.getAllProductReviews.url}?productId=${productId}`,
+      });
+      if (response.success) {
+        setReviews(response.data);
+      }
+    } catch (error) {
+      axiosToastError(error);
+    }
+  };
+  const averageRating = Number(reviews?.averageRating) || 0;
   const handleNext = () => {
     imgContainer.current.scrollLeft += 100;
   };
   const handlePrev = () => {
     imgContainer.current.scrollLeft -= 100;
   };
-
   // top scroll
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -170,9 +190,24 @@ export default function ProductDisplayPage() {
                 <span className="mx-1">/</span>
                 <span className="text-slate-400 ">{productData?.name}</span>
               </div>
-              <p className="bg-green-200 w-fit px-2 mb-2 rounded-full text-xs">
-                {productData?.discount ? `${productData?.discount}% off` : ""}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="bg-green-200 w-fit px-2 mb-2 rounded-full text-xs">
+                  {productData?.discount ? `${productData?.discount}% off` : ""}
+                </p>
+                <div className="flex items-center -mt-2">
+                  <StarRatings
+                    rating={averageRating}
+                    starRatedColor="orange"
+                    numberOfStars={5}
+                    name="rating"
+                    starDimension="20px"
+                    starSpacing="1px"
+                  />
+                  <p className="ml-2 text-xs font-normal text-gray-900">
+                    {averageRating} out of 5
+                  </p>
+                </div>
+              </div>
               <h2 className="text-lg font-semibold lg:text-2xl mb-2">
                 {productData?.name}
               </h2>
@@ -291,9 +326,7 @@ export default function ProductDisplayPage() {
               </div>
               {/* more info object */}
               <div>
-                {/* <h2 className="font-semibold my-2 text-lg border border-green-500 py-1 text-center rounded w-1/3">
-                      More Info
-                    </h2> */}
+                
                 <div className="grid gap-2">
                   {Object.keys(productData?.more_info || {}).map((key) => (
                     <div key={key} className="grid gap-1">
@@ -308,7 +341,14 @@ export default function ProductDisplayPage() {
             </div>
             {/* review part */}
             <div className="p-4 order-4 lg:pl-7 text-base lg:text-lg">
-              <h1>Review</h1>
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+              Write a review
+            </h2>
+              <div>
+                <ReviewData 
+                  productId={productId}
+                />
+              </div>
             </div>
           </section>
 

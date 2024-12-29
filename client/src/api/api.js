@@ -237,7 +237,17 @@ const apiSummary = {
   getAllOrders: {
     url: "/order/get-all-orders",
     method: "GET",
-  }
+  },
+
+  // Review API
+  storeProductReview: {
+    url: "/review/store-product-review",
+    method: "POST",
+  },
+  getAllProductReviews: {
+    url: "/review/get-reviews-product-id",
+    method: "GET",
+  },
 };
 
 export default apiSummary;
