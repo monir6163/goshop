@@ -69,12 +69,6 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    // reviews: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "review",
-    //   },
-    // ],
   },
   { timestamps: true, versionKey: false }
 );

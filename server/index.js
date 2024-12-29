@@ -15,6 +15,7 @@ import orderRouter from "./routes/order.route.js";
 import productRouter from "./routes/product.route.js";
 import subCatRouter from "./routes/subCategory.route.js";
 import userRouter from "./routes/user.route.js";
+import reviewRouter from "./routes/review.route.js";
 
 const app = express();
 dotenv.config();
@@ -46,6 +47,7 @@ app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/address", addressRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/review", reviewRouter);
 app.use("/api/image", imgRouter);
 
 //connect to database
