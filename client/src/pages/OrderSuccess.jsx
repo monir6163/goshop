@@ -8,15 +8,19 @@ export default function OrderSuccess() {
   const navigate = useNavigate();
    const {
       featchCartData,
+      user
     } = useGlobalContext();
   useEffect(() => {
     if (!location.state) {
       // navigate("/");
     }
+   
+  }, [location, navigate]);
+  useEffect(() => {
     if (featchCartData) {
       featchCartData();
     }
-  }, [location, navigate]);
+  }, [user]);
   return (
     <section className="bg-white py-8 antialiased md:py-16">
       <div className="mx-auto max-w-2xl px-4 2xl:px-0">

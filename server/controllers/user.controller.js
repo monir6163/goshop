@@ -457,10 +457,9 @@ export async function refreshToken(req, res) {
         error: true,
       });
     }
-
     if (refToken !== user.refresh_token) {
-      return res.status(401).json({
-        message: "refreshToken not matched",
+      return res.status(403).json({
+        message: "refreshToken not matched", // Use 403 for forbidden
         success: false,
         error: true,
       });
@@ -479,7 +478,6 @@ export async function refreshToken(req, res) {
       data: accessToken,
     });
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .json({ message: error.message || error, error: true, success: false });

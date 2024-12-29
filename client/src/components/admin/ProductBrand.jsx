@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { createColumnHelper } from "@tanstack/react-table";
 import { Pencil, Plus, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ import BrandTable from "./BrandTable";
 import EditBand from "./EditBand";
 import UploadBrandModal from "./UploadBrandModal";
 import ViewImage from "./ViewImage";
+import LoadingSpinner from "../../utils/LoadingSpinner";
 
 export default function ProductBrand() {
   const [openBrandModal, setOpenBrandModal] = useState(false);
@@ -21,24 +23,66 @@ export default function ProductBrand() {
   const [editData, setEditData] = useState({});
   const [brands, setBrands] = useState([]);
   const [imageUrl, setImageUrl] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
   const columnHelper = createColumnHelper();
   const allBrand = useSelector((state) => state.product.allBrand);
+  const limit= 12;
   const fetchBrands = async () => {
     try {
       const { data } = await Axios({
-        ...apiSummary.getBrands,
+        ...apiSummary.getBrandsAdmin,
+        url: `${apiSummary.getBrandsAdmin.url}?page=${page}&search=${search}&limit=${limit}`
       });
-      if (data.success) {
+      if (data?.success) {
         setBrands(data.data);
+        setTotalPages(data.pages);
       }
     } catch (error) {
       axiosToastError(error);
+    }finally{
+      setLoading(false)
     }
   };
+  const handlePrevious = () => {
+    if (page > 1) {
+      setPage((prev) => prev - 1);
+      window.scrollTo(0, 0);
+    }
+  };
+  const handleNext = () => {
+    if (page !== totalPages) {
+      setPage((prev) => prev + 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handleSearch = async (e) => {
+    const { value } = e.target;
+    setSearch(value);
+    setPage(1);
+  };
+
+  useEffect(() => {
+    let flag = true;
+    const interval = setTimeout(() => {
+      if (flag) {
+        fetchBrands();
+        flag = false;
+      }
+    }, 300);
+    return () => {
+      clearTimeout(interval);
+    };
+  }, [search]);
+
+
   useEffect(() => {
     setBrands(allBrand);
     fetchBrands();
-  }, [allBrand]);
+  }, [allBrand, page]);
 
   const handleDelete = async (id) => {
     try {
@@ -107,10 +151,22 @@ export default function ProductBrand() {
       },
     }),
   ];
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
   return (
     <>
       <div className="p-2 bg-white shadow-md flex items-center justify-between">
         <h2 className="font-semibold">Product Brand</h2>
+         {/* search category */}
+         <input
+          type="text"
+          placeholder="Search Brand"
+          className="border p-1 rounded"
+          value={search}
+          onChange={handleSearch}
+        />
         <button
           onClick={() => setOpenBrandModal(true)}
           className="text-sm border flex gap-2 items-center border-green-200 hover:bg-green-600 px-3 py-1 rounded hover:text-white"
@@ -118,10 +174,30 @@ export default function ProductBrand() {
           <Plus size={16} /> Add Brand
         </button>
       </div>
-
+      
       <div className="overflow-auto w-full max-w-[95vw]">
-        {<BrandTable column={column} data={brands} />}
+        {<BrandTable column={column} data={brands} page={page} limit={limit}/>}
       </div>
+
+      {brands.length > 0 && <div className="flex justify-between my-4 px-2">
+          <button
+            onClick={handlePrevious}
+            disabled={page === 1}
+            className="border border-green-500 rounded px-4 py-1 hover:text-white hover:bg-green-600"
+          >
+            Previous
+          </button>
+          <button className=" bg-slate-100">
+            {page}/{totalPages}
+          </button>
+          <button
+            onClick={handleNext}
+            disabled={totalPages === page}
+            className="border border-green-500 rounded px-4 py-1 hover:text-white hover:bg-green-600"
+          >
+            Next
+          </button>
+        </div>}
 
       {imageUrl && <ViewImage url={imageUrl} close={() => setImageUrl("")} />}
 
@@ -146,6 +222,11 @@ export default function ProductBrand() {
           confirm={() => handleDelete(editData._id)}
           cancel={() => setDeleteAlert(false)}
         />
+      )}
+      {!brands[0] && (
+        <div className="p-4 bg-white shadow-md mt-2">
+          <p className="text-center font-semibold">No Category Found</p>
+        </div>
       )}
     </>
   );

@@ -52,6 +52,40 @@ export async function getBrands(req, res) {
   }
 }
 
+// get all brand admin
+export async function getBrandsAdmin(req, res){
+  try {
+    const {page, limit, search} = req.query;
+    if(!page){
+      page = 1;
+    }
+    if(!limit){
+      limit = 12;
+    }
+    const skip = (page-1)*limit;
+    const query = search ? {name: {$regex: search, $options: "i"}} : {};
+    const [data, total] = await Promise.all([
+      Brand.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+      Brand.countDocuments(query)
+    ])
+    return res.status(200).json({
+      data,
+      total,
+      pages: Math.ceil(total / limit),
+      message: "All brands",
+      error: false,
+      success: true,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message, error: true, success: false });
+  }
+}
+
 // update brand
 export async function updateBrand(req, res) {
   try {

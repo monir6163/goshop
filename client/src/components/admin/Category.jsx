@@ -15,7 +15,9 @@ export default function Category() {
   const [openEdit, setOpenEdit] = useState(false);
   const [categories, setCategories] = useState([]);
   const [deleteAlert, setDeleteAlert] = useState(false);
-  const [searchCat, setSearchCat] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [editData, setEditData] = useState({
     name: "",
@@ -26,11 +28,12 @@ export default function Category() {
   const fetchCategories = async () => {
     try {
       const { data } = await Axios({
-        ...apiSummary.getCategories,
+        ...apiSummary.getCategoryAdmin,
+        url:`${apiSummary.getCategoryAdmin.url}?page=${page}&search=${search}&limit=${12}`
       });
       if (data.success) {
         setCategories(data.data);
-        // setLoading(false);
+        setTotalPages(data.pages);
       }
     } catch (error) {
       axiosToastError(error);
@@ -40,7 +43,39 @@ export default function Category() {
   };
   useEffect(() => {
     fetchCategories();
-  }, []);
+  }, [page]);
+
+  const handlePrevious = () => {
+    if (page > 1) {
+      setPage((prev) => prev - 1);
+      window.scrollTo(0, 0);
+    }
+  };
+  const handleNext = () => {
+    if (page !== totalPages) {
+      setPage((prev) => prev + 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handleSearch = async (e) => {
+    const { value } = e.target;
+    setSearch(value);
+    setPage(1);
+  };
+
+  useEffect(() => {
+    let flag = true;
+    const interval = setTimeout(() => {
+      if (flag) {
+        fetchCategories();
+        flag = false;
+      }
+    }, 300);
+    return () => {
+      clearTimeout(interval);
+    };
+  }, [search]);
 
   const deleteCategory = async (id) => {
     try {
@@ -58,16 +93,6 @@ export default function Category() {
       toast.error(error || "Failed to delete category");
     }
   };
-
-  useEffect(() => {
-    const filteredCat = categories.filter((cat) => {
-      return cat.name.toLowerCase().includes(searchCat);
-    });
-    setCategories(filteredCat);
-    if (searchCat === "") {
-      fetchCategories();
-    }
-  }, [searchCat]);
 
   const handleCheck = async (id, currentChecked) => {
     try {
@@ -87,6 +112,8 @@ export default function Category() {
   if (loading) {
     return <LoadingSpinner />;
   }
+  // top scroll
+ 
   return (
     <>
       <div className="p-2 bg-white shadow-md flex items-center justify-between">
@@ -96,8 +123,8 @@ export default function Category() {
           type="text"
           placeholder="Search Category"
           className="border p-1 rounded"
-          value={searchCat}
-          onChange={(e) => setSearchCat(e.target.value.toLowerCase())}
+          value={search}
+          onChange={handleSearch}
         />
         <button
           onClick={() => setOpenCatModal(true)}
@@ -125,6 +152,7 @@ export default function Category() {
               <div className="flex justify-evenly my-1">
                 <input
                   type="checkbox"
+                  title="Show on home"
                   onChange={() => handleCheck(cat._id, cat.showOnHome)}
                   checked={cat?.showOnHome}
                 />
@@ -151,6 +179,25 @@ export default function Category() {
           </div>
         ))}
       </div>
+      {categories.length > 0 && <div className="flex justify-between my-4 px-2">
+          <button
+            onClick={handlePrevious}
+            disabled={page === 1}
+            className="border border-green-500 rounded px-4 py-1 hover:text-white hover:bg-green-600"
+          >
+            Previous
+          </button>
+          <button className=" bg-slate-100">
+            {page}/{totalPages}
+          </button>
+          <button
+            onClick={handleNext}
+            disabled={page === totalPages}
+            className="border border-green-500 rounded px-4 py-1 hover:text-white hover:bg-green-600"
+          >
+            Next
+          </button>
+        </div>}
 
       {openEdit && (
         <EditCategory

@@ -4,17 +4,19 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import LoadingSpinner from "../../utils/LoadingSpinner";
 
-export default function DisplayTable({ data, column }) {
+export default function DisplayTable({ data, column, page, limit }) {
   const table = useReactTable({
     data,
     columns: column,
     getCoreRowModel: getCoreRowModel(),
+    page:page,
+    limit:limit
   });
+
   return (
     <div className="p-2">
-      {data?.length === 0 && <LoadingSpinner />}
+      {data?.length > 0 &&
       <table className="w-full">
         <thead className="bg-black text-white">
           {table.getHeaderGroups().map((headerGroup) => (
@@ -36,7 +38,9 @@ export default function DisplayTable({ data, column }) {
         <tbody>
           {table.getRowModel().rows.map((row, i) => (
             <tr key={row.id}>
-              <td className="border px-2 py-1 whitespace-nowrap">{i + 1}</td>
+              <td className="border px-2 py-1 whitespace-nowrap">
+              {(page - 1) * limit + i + 1}
+              </td>
               {row.getVisibleCells().map((cell) => (
                 <td
                   key={cell.id}
@@ -49,6 +53,7 @@ export default function DisplayTable({ data, column }) {
           ))}
         </tbody>
       </table>
+      }
     </div>
   );
 }

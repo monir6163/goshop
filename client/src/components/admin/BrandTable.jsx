@@ -4,17 +4,18 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import LoadingSpinner from "../../utils/LoadingSpinner";
 
-export default function BrandTable({ data, column }) {
+export default function BrandTable({ data, column, page, limit }) {
   const table = useReactTable({
     data,
     columns: column,
+    page: page,
+    limit: limit,
     getCoreRowModel: getCoreRowModel(),
   });
   return (
     <div className="p-2">
-      {data?.length === 0 && <LoadingSpinner />}
+      {data?.length > 0 &&
       <table className="w-full">
         <thead className="bg-black text-white">
           {table.getHeaderGroups().map((headerGroup) => (
@@ -37,7 +38,7 @@ export default function BrandTable({ data, column }) {
           {table.getRowModel().rows.map((row, i) => (
             <tr key={row.id}>
               <td className="border px-2 py-1 text-center whitespace-nowrap">
-                {i + 1}
+              {(page - 1) * limit + i + 1}
               </td>
               {row.getVisibleCells().map((cell) => (
                 <td
@@ -51,6 +52,7 @@ export default function BrandTable({ data, column }) {
           ))}
         </tbody>
       </table>
+    }
     </div>
   );
 }

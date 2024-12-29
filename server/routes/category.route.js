@@ -4,6 +4,7 @@ import {
   DeleteCategory,
   getAllCategories,
   getCategories,
+  getCategoriesAdmin,
   updateCategory,
   updateCategoryShowOnHome,
 } from "../controllers/cat.controller.js";
@@ -12,6 +13,8 @@ import { authorize, authProtect } from "../middleware/auth.middleware.js";
 const catRouter = Router();
 
 catRouter.post("/create", authProtect, authorize("Admin"), createCategory);
+
+catRouter.get("/get-category-admin", authProtect, authorize("Admin"), getCategoriesAdmin)
 
 catRouter.get("/get-categories", getCategories);
 

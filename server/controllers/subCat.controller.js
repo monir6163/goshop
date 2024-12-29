@@ -56,6 +56,41 @@ export async function getSubCategories(req, res) {
   }
 }
 
+// get subcategory admin
+export async function getSubCategoriesAdmin(req, res) {
+  try {
+    const {page, limit, search} = req.query;
+    if(!page){
+      page = 1;
+    }
+    if(!limit){
+      limit = 12;
+    }
+    const query = search ? {name: {$regex: search, $options: "i"}} : {};
+    const skip = (page - 1) * limit;
+    const [data, total] = await Promise.all([
+      SubCategory.find(query)
+      .sort({createdAt: -1})
+      .populate('category_id')
+      .skip(skip)
+      .limit(limit),
+      SubCategory.countDocuments(query)
+    ])
+    return res.status(200).json({
+      data,
+      total,
+      pages: Math.ceil(total / limit),
+      message: "All SubCategory",
+      error: false,
+      success: true,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message, error: true, success: false });
+  }
+}
+
 // Update SubCategory
 export async function updateSubCategory(req, res) {
   try {

@@ -65,6 +65,10 @@ const apiSummary = {
     url: "/category/get-categories",
     method: "GET",
   },
+  getCategoryAdmin: {
+    url: "/category/get-category-admin",
+    method: "GET",
+  },
   getAllCategories: {
     url: "/category/get-categories-client",
     method: "GET",
@@ -91,6 +95,10 @@ const apiSummary = {
     url: "/subcategory/get-subCategories",
     method: "GET",
   },
+  getSubCatAdmin: {
+    url: "/subcategory/get-subcategory-admin",
+    method: "GET",
+  },
   updateSubCategory: {
     url: "/subcategory/update/:id",
     method: "PUT",
@@ -107,6 +115,10 @@ const apiSummary = {
   },
   getBrands: {
     url: "/brand/all-brands",
+    method: "GET",
+  },
+  getBrandsAdmin: {
+    url: "/brand/get-brands-admin",
     method: "GET",
   },
   updateBrand: {

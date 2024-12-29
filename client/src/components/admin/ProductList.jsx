@@ -34,11 +34,13 @@ export default function ProductList() {
   const handlePrevious = () => {
     if (page > 1) {
       setPage((prev) => prev - 1);
+      window.scrollTo(0, 0);
     }
   };
   const handleNext = () => {
     if (page !== totalPages) {
       setPage((prev) => prev + 1);
+      window.scrollTo(0, 0);
     }
   };
 
@@ -97,6 +99,7 @@ export default function ProductList() {
         <div className="flex justify-between my-4 px-2">
           <button
             onClick={handlePrevious}
+            disabled={page === 1}
             className="border border-green-500 rounded px-4 py-1 hover:text-white hover:bg-green-600"
           >
             Previous
@@ -106,6 +109,7 @@ export default function ProductList() {
           </button>
           <button
             onClick={handleNext}
+            disabled={page === totalPages}
             className="border border-green-500 rounded px-4 py-1 hover:text-white hover:bg-green-600"
           >
             Next

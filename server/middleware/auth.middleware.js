@@ -9,7 +9,7 @@ export const authProtect = async (req, res, next) => {
 
     if (!token) {
       return res.status(401).json({
-        message: "Token not found",
+        message: "Please Login First",
         success: false,
         error: true,
       });

@@ -24,25 +24,69 @@ Axios.interceptors.request.use(
 );
 
 //axios interceptors for handling 401 error
+// Axios.interceptors.response.use(
+//   (response) => {
+//     return response;
+//   },
+//   async (error) => {
+//     let originalRequest = error.config;
+//     if (error.response.status === 401 && !originalRequest.retry) {
+//       originalRequest.retry = true;
+//       const refreshToken = localStorage.getItem("refreshToken");
+//       // check refreshToken is valid time or not
+//       decoded_Token_Refresh(refreshToken);
+//       if (refreshToken) {
+//         const newAccessToken = await refreshAccessToken(refreshToken);
+//         if (newAccessToken) {
+//           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+//           return Axios(originalRequest);
+//         }
+//       }
+//     }
+//     return Promise.reject(error);
+//   }
+// );
+
 Axios.interceptors.response.use(
   (response) => {
     return response;
   },
   async (error) => {
-    let originalRequest = error.config;
-    if (error.response.status === 401 && !originalRequest.retry) {
-      originalRequest.retry = true;
+    const originalRequest = error.config;
+
+    // Check if the error is 401 and it's not already retried
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      // Fetch the refresh token
       const refreshToken = localStorage.getItem("refreshToken");
-      // check refreshToken is valid time or not
       decoded_Token_Refresh(refreshToken);
-      if (refreshToken) {
+      // Validate refreshToken
+      if (!refreshToken) {
+        console.error("No refresh token available");
+        return Promise.reject(error); // Stop retrying
+      }
+
+      try {
+        // Attempt to refresh the access token
         const newAccessToken = await refreshAccessToken(refreshToken);
+
         if (newAccessToken) {
+          // Update the request's Authorization header
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return Axios(originalRequest);
+          return Axios(originalRequest); // Retry the original request
         }
+      } catch (refreshError) {
+        console.error("Failed to refresh token:", refreshError.message);
+        // Redirect to login or handle logout logic
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        window.location.href = "/login"; // Example: Redirect to login
+        return Promise.reject(refreshError); // Stop retrying
       }
     }
+
+    // Handle non-401 errors or failed refresh
     return Promise.reject(error);
   }
 );
@@ -59,6 +103,6 @@ const refreshAccessToken = async (refreshToken) => {
     localStorage.setItem("accessToken", data?.data);
     return data?.data;
   } catch (error) {
-    console.log(error);
+    return Promise.reject(error);
   }
 };

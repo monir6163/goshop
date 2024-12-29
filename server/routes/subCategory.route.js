@@ -4,6 +4,7 @@ import {
   createSubCategory,
   deleteSubCategory,
   getSubCategories,
+  getSubCategoriesAdmin,
   updateSubCategory,
 } from "../controllers/subCat.controller.js";
 import { authorize, authProtect } from "../middleware/auth.middleware.js";
@@ -16,6 +17,8 @@ subCatRouter.post(
   authorize("Admin"),
   createSubCategory
 );
+
+subCatRouter.get("/get-subcategory-admin", authProtect, authorize('Admin'), getSubCategoriesAdmin)
 
 subCatRouter.get("/get-subCategories", getSubCategories);
 

@@ -1,8 +1,8 @@
 # React + Vite
 
-1. category admin (search, pagination)
-2. subcategory admin (search, pagination)
-3. brand admin (search, pagination)
+1. category admin (search, pagination) // done
+2. subcategory admin (search, pagination) // done
+3. brand admin (search, pagination) // done
 4. upload product thumbnail image added and product status update
 5. product details page review submit (loggedin user)
 6. related product show single page product

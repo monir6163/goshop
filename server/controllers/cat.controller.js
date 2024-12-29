@@ -68,6 +68,44 @@ export async function getCategories(req, res) {
   }
 }
 
+//get category for admin
+export async function getCategoriesAdmin(req, res) {
+  try {
+    const {page, limit, search} = req.query;
+    if(!page){
+      page = 1;
+    }
+    if(!limit){
+      limit = 12;
+    }
+    const query = search ? {name: {$regex: search, $options: "i"}} : {};
+    const skip = (page - 1) * limit;
+    // sort by alphabetically
+    const [data, total] = await Promise.all([
+      Category.find(query)
+      // .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+      Category.countDocuments(query),
+    ]);
+
+    return res.status(200).json({
+      data,
+      total,
+      pages: Math.ceil(total / limit),
+      message: "category get success",
+      error: false,
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "category get faield",
+      error: true,
+      success: false,
+    });
+  }
+}
+
 // get all category home page
 export async function getAllCategories(req, res) {
   try {

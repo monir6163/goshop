@@ -4,6 +4,7 @@ import {
   createBrand,
   deleteBrand,
   getBrands,
+  getBrandsAdmin,
   updateBrand,
 } from "../controllers/brand.controller.js";
 import { authorize, authProtect } from "../middleware/auth.middleware.js";
@@ -11,6 +12,8 @@ import { authorize, authProtect } from "../middleware/auth.middleware.js";
 const brandRouter = Router();
 
 brandRouter.post("/create", authProtect, authorize("Admin"), createBrand);
+
+brandRouter.get("/get-brands-admin", authProtect, authorize('Admin'), getBrandsAdmin)
 
 brandRouter.get("/all-brands", getBrands);
 

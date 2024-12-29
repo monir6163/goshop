@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { createColumnHelper } from "@tanstack/react-table";
 import { Pencil, Plus, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -12,6 +13,7 @@ import DisplayTable from "./DisplayTable";
 import EditSubCategory from "./EditSubCategory";
 import UploadSubCatModal from "./UploadSubCatModal";
 import ViewImage from "./ViewImage";
+import LoadingSpinner from "../../utils/LoadingSpinner";
 export default function SubCategory() {
   const [openSubCategory, setOpenSubCategory] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -22,22 +24,66 @@ export default function SubCategory() {
   const [deleteAlert, setDeleteAlert] = useState(false);
   const columnHelper = createColumnHelper();
   const allCategory = useSelector((state) => state.product.allCategory);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const limit = 12;
   const fetchSubCategories = async () => {
     try {
       const { data } = await Axios({
-        ...apiSummary.getSubCategories,
+        ...apiSummary.getSubCatAdmin,
+        url:`${apiSummary.getSubCatAdmin.url}?page=${page}&search=${search}&limit=${limit}`
       });
       if (data.success) {
         setSubCategories(data.data);
+        setTotalPages(data.pages);
       }
     } catch (error) {
-      console.log(error);
+      axiosToastError(error)
+    }finally{
+      setLoading(false)
     }
   };
   useEffect(() => {
     setCategories(allCategory);
     fetchSubCategories();
-  }, [allCategory]);
+  }, [allCategory, page]);
+
+
+  const handlePrevious = () => {
+    if (page > 1) {
+      setPage((prev) => prev - 1);
+      window.scrollTo(0, 0);
+    }
+    
+  };
+  const handleNext = () => {
+    if (page !== totalPages) {
+      setPage((prev) => prev + 1);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const handleSearch = async (e) => {
+    const { value } = e.target;
+    setSearch(value);
+    setPage(1);
+  };
+
+  useEffect(() => {
+    let flag = true;
+    const interval = setTimeout(() => {
+      if (flag) {
+        fetchSubCategories()
+        flag = false;
+      }
+    }, 300);
+    return () => {
+      clearTimeout(interval);
+    };
+  }, [search]);
+
 
   const handleDelete = async (id) => {
     try {
@@ -120,10 +166,23 @@ export default function SubCategory() {
     }),
   ];
 
+
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
   return (
     <>
       <div className="p-2 bg-white shadow-md flex items-center justify-between">
         <h2 className="font-semibold">SubCategory</h2>
+        {/* search category */}
+        <input
+          type="text"
+          placeholder="Search SubCategory"
+          className="border p-1 rounded"
+          value={search}
+          onChange={handleSearch}
+        />
         <button
           onClick={() => setOpenSubCategory(true)}
           className="text-sm border flex gap-2 items-center border-green-200 hover:bg-green-600 px-3 py-1 rounded hover:text-white"
@@ -132,9 +191,38 @@ export default function SubCategory() {
         </button>
       </div>
 
+      {!subCategories[0] && (
+        <div className="p-4 bg-white shadow-md mt-2">
+          <p className="text-center font-semibold">No Category Found</p>
+        </div>
+      )}
+
       <div className="overflow-auto w-full max-w-[95vw]">
-        {<DisplayTable data={subCategories} column={column} />}
+        {<DisplayTable data={subCategories} column={column} page={page} limit={limit}/>}
       </div>
+      {subCategories.length > 0 && <div className="flex justify-between my-4 px-2">
+          <button
+            onClick={handlePrevious}
+            disabled={page === 1}
+            className="border border-green-500 rounded px-4 py-1 hover:text-white hover:bg-green-600"
+          >
+            Previous
+          </button>
+          <button className=" bg-slate-100">
+            {page}/{totalPages}
+          </button>
+          <button
+            onClick={handleNext}
+            disabled={page === totalPages}
+            className="border border-green-500 rounded px-4 py-1 hover:text-white hover:bg-green-600"
+          >
+            Next
+          </button>
+        </div>}
+
+
+
+
       {imageUrl && <ViewImage url={imageUrl} close={() => setImageUrl("")} />}
 
       {openSubCategory && (
