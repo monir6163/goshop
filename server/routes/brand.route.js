@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   createBrand,
   deleteBrand,
+  getBrandById,
   getBrands,
   getBrandsAdmin,
   updateBrand,
@@ -20,5 +21,7 @@ brandRouter.get("/all-brands", getBrands);
 brandRouter.put("/update/:id", authProtect, authorize("Admin"), updateBrand);
 
 brandRouter.delete("/delete/:id", authProtect, authorize("Admin"), deleteBrand);
+
+brandRouter.get("/get-brand-products", getBrandById);
 
 export default brandRouter;

@@ -25,6 +25,7 @@ import ResetPassword from "../pages/Reset-password";
 import SearchPage from "../pages/SearchPage";
 import SubCategoryPage from "../pages/SubCategoryPage";
 import UploadProductPage from "../pages/UploadProductPage";
+import BrandProducts from "../pages/BrandProducts";
 
 const router = createBrowserRouter([
   {
@@ -134,6 +135,10 @@ const router = createBrowserRouter([
       {
         path: "product/:product",
         element: <ProductDisplayPage />,
+      },
+      {
+        path: "brand/:brand",
+        element: <BrandProducts />,
       },
       {
         path: "cart",

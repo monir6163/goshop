@@ -129,6 +129,10 @@ const apiSummary = {
     url: "/brand/delete/:id",
     method: "DELETE",
   },
+  getBrandProducts: {
+    url: "/brand/get-brand-products",
+    method: "GET",
+  },
 
   // Product API
   createProduct: {
@@ -174,6 +178,11 @@ const apiSummary = {
   searchProduct: {
     url: "/product/search-product",
     method: "GET",
+  },
+
+  updateProductStatus: {
+    url: "/product//update-product-status",
+    method: "POST",
   },
 
   // Cart API

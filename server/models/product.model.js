@@ -66,9 +66,8 @@ const productSchema = new mongoose.Schema(
       default: {},
     },
     status: {
-      type: String,
-      enum: ["Active", "Inactive"],
-      default: "Active",
+      type: Boolean,
+      default: true,
     },
     // reviews: [
     //   {

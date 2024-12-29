@@ -9,6 +9,7 @@ import {
   searchProduct,
   storeProduct,
   UpdateProductDetails,
+  UpdateProductStatus,
 } from "../controllers/product.controller.js";
 import { authorize, authProtect } from "../middleware/auth.middleware.js";
 
@@ -31,6 +32,8 @@ productRouter.delete(
   authorize("Admin"),
   deleteProduct
 );
+
+productRouter.post("/update-product-status", authProtect, authorize('Admin'), UpdateProductStatus)
 
 // search product query string
 productRouter.get("/search-product", searchProduct);

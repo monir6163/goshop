@@ -6,12 +6,15 @@ import apiSummary from "../api/api";
 import { Axios } from "../api/axios";
 import CardProduct from "../components/CardProduct";
 import Loading from "../utils/Loading";
+import InfiniteScroll from "react-infinite-scroll-component";
+import CardLoading from "../components/CardLoading";
 
 export default function ProductListPage() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState("newest");
   const params = useParams();
   const allSubCategory = useSelector((state) => state.product.allSubCategory);
   const [displaySubCategory, setDisplaySubCategory] = useState([]);
@@ -19,9 +22,8 @@ export default function ProductListPage() {
   const category_id = params?.category?.split("-")?.slice(-1)[0];
   const subcategory_id = params?.subcategory?.split("-")?.slice(-1)[0];
   const subCatName = params?.subcategory?.split("-")?.slice(0, -1).join(" ");
-  // const catName = params?.category?.split("-")?.slice(0, -1).join(" ");
 
-  const fetchProductsData = async () => {
+  const fetchProductsData = async (currentPage = 1, sort = "newest") => {
     try {
       setLoading(true);
       const res = await Axios({
@@ -29,17 +31,18 @@ export default function ProductListPage() {
         data: {
           category_id: category_id,
           subcategory_id: subcategory_id,
-          page: page,
+          page: currentPage,
           limit: 10,
+          sortBy: sort,
         },
       });
       if (res.data.success) {
-        if (page === 1) {
+        if (currentPage === 1) {
           setData(res.data.data);
         } else {
           setData((prevData) => [...prevData, ...res.data.data]);
         }
-        setTotalPages(res.data.total);
+        setTotalPages(res?.data?.page);
       } else {
         setData([]);
       }
@@ -53,18 +56,33 @@ export default function ProductListPage() {
   useEffect(() => {
     setData([]);
     setPage(1);
-    fetchProductsData();
+    fetchProductsData(1, sortBy);
 
     // Filter subcategories based on the category
     const subCat = allSubCategory?.filter((sub) =>
       sub?.category_id?.some((c) => c?._id === category_id)
     );
     setDisplaySubCategory(subCat);
-  }, [params, page, allSubCategory]);
-  // top scroll
-   useEffect(() => {
+  }, [params, allSubCategory, sortBy]);
+
+  const fetchDataNextPage = () => {
+    if (page < totalPages && !loading) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchProductsData(nextPage);
+    }
+  };
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value); // Update sort state
+    setPage(1); // Reset to the first page when sorting changes
+  };
+
+  // Scroll to the top when params change
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [params]);
+
   return (
     <section className="sticky top-24 lg:top-20 bg-white">
       <div className="container sticky top-24 mx-auto grid grid-cols-[90px,1fr] md:grid-cols-[200px,1fr] lg:grid-cols-[210px,1fr]">
@@ -101,26 +119,65 @@ export default function ProductListPage() {
 
         {/* Product list */}
         <div>
-          <div className="bg-white shadow-md p-4">
+          <div className="bg-white shadow-md p-4 flex justify-between">
             <h3 className="capitalize text-sm font-medium md:font-semibold">
               {subCatName === "undefined" ? "No Sub Category" : subCatName}
             </h3>
+            <div className="flex gap-2 items-center">
+            <div className="text-gray-500 text-sm font-medium">Sort by:</div>
+              <select
+                name="sort"
+                id="sort"
+                className="border text-green-900 border-gray-300 p-1 rounded text-sm outline-none focus-within:outline-none"
+                value={sortBy}
+                onChange={handleSortChange}
+              >
+                <option value="newest">Newest (New to Old)</option>
+                <option value="discount">Discount (High to Low)</option>
+                <option value="priceLowToHigh">Price (Low to High)</option>
+                <option value="priceHighToLow">Price (High to Low)</option>
+                <option value="rating">Rating (High to Low)</option>
+                <option value="name">Name (A to Z)</option>
+              </select>
           </div>
-          <div className="grid grid-cols-1 bg-[#f4f6fb] p-2 overflow-hidden py-3 gap-3 md:grid-cols-3 lg:grid-cols-5">
-            {loading && (
+          </div>
+          {loading && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
                 <Loading />
               </div>
             )}
-            {!loading && data.length === 0 && (
-              <div className="text-center text-gray-600 col-span-full">
-                No products in this category or subcategory
+          <InfiniteScroll
+            dataLength={data?.length}
+            next={fetchDataNextPage}
+            hasMore={page < totalPages}
+            loader={
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                {new Array(10).fill(null).map((_, index) => (
+                  <CardLoading key={`loading-${index}`} />
+                ))}
               </div>
-            )}
-            {data?.map((p, i) => (
-              <CardProduct key={i} data={p} />
-            ))}
-          </div>
+            }
+            endMessage={
+              data?.length > 0 ? (
+                <p className="text-center font-semibold py-2">
+                  No more products
+                </p>
+              ) : (
+                <p className="text-center font-semibold py-2"></p>
+              )
+            }
+          >
+            <div className="grid grid-cols-1 bg-[#f4f6fb] p-2 overflow-hidden py-3 gap-3 md:grid-cols-3 lg:grid-cols-5">
+              {!loading && data.length === 0 && (
+                <div className="text-center text-gray-600 col-span-full">
+                  No products in this category or subcategory
+                </div>
+              )}
+              {data?.map((p, i) => (
+                <CardProduct key={i} data={p} />
+              ))}
+            </div>
+          </InfiniteScroll>
         </div>
       </div>
     </section>

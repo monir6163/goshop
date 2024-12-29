@@ -14,7 +14,7 @@ const CardProduct = ({ data }) => {
     >
       <div className="min-h-20 w-full max-h-24 lg:max-h-32 rounded overflow-hidden">
         <img
-          src={data.image[0]}
+          src={data?.thumbnail || data.image[0]}
           className="w-full h-full object-scale-down lg:scale-125"
         />
       </div>

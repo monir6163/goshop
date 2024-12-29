@@ -27,11 +27,26 @@ const ProductCard = ({ data, fetchProducts }) => {
       axiosToastError(error);
     }
   };
+  const handleCheck = async (id, status)=>{
+    try {
+      const { data } = await Axios({
+        ...apiSummary.updateProductStatus,
+        data: { id, status: !status },
+      });
+      if (data.success) {
+        toast.success(data.message);
+        fetchProducts();
+      }
+    } catch (error) {
+      axiosToastError(error);
+    }
+  }
+  console.log("data", data);
   return (
     <div className="bg-[#edf4ff] shadow-md border rounded-lg">
       <div>
         <img
-          src={data?.image[0]}
+          src={data?.thumbnail || data?.image[0]}
           alt={data?.name}
           className="w-full object-scale-down rounded-lg"
         />
@@ -43,6 +58,12 @@ const ProductCard = ({ data, fetchProducts }) => {
         </p>
         <p className="text-slate-400 text-sm">{data?.unit}</p>
         <div className="flex justify-evenly my-1">
+        <input
+          type="checkbox"
+          title="Product Enable"
+          onChange={() => handleCheck(data?._id, data?.status)}
+          checked={data?.status === true}
+        />
           <button
             onClick={() => {
               setOpenDelete(true);

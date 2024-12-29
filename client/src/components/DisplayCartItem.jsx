@@ -77,7 +77,7 @@ export default function DisplayCartItem({ close }) {
                   >
                     <div className="w-16 h-16 rounded shadow">
                       <img
-                        src={item?.product_id?.image[0]}
+                        src={item?.product_id?.thumbnail || item?.product_id?.image[0]}
                         alt={item?.product_id?.name}
                         className="w-full h-full object-cover"
                       />

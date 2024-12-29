@@ -9,7 +9,7 @@ import apiSummary from "../../api/api";
 import { Axios } from "../../api/axios";
 import { setAllBrand } from "../../redux/productSlice";
 import { axiosToastError } from "../../utils/axiosToastError";
-import { uploadImage } from "../../utils/UploadImage";
+import { uploadImage, uploadSingleImage } from "../../utils/UploadImage";
 import AddMoreInfo from "./AddMoreInfo";
 import UploadBrandModal from "./UploadBrandModal";
 import ViewImage from "./ViewImage";
@@ -17,6 +17,7 @@ import ViewImage from "./ViewImage";
 export default function UploadProducts() {
   const [data, setData] = useState({
     name: "",
+    thumbnail: "",
     image: [],
     category_id: [],
     subcategory_id: [],
@@ -29,12 +30,14 @@ export default function UploadProducts() {
     more_info: {},
   });
   const [imgLoading, setImgLoading] = useState(false);
+  const [thumbnailLoading, setThumbnailLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [openBrandModal, setOpenBrandModal] = useState(false);
   const [selectCategory, setSelectCategory] = useState("");
   const [selectSubCategory, setSelectSubCategory] = useState("");
   const [selectBrand, setSelectBrand] = useState("");
   const [viewImage, setViewImage] = useState("");
+  const [viewThumbnail, setViewThumbnail] = useState("");
   const [moreInfoValue, setMoreInfoValue] = useState("");
   const [openMoreInfoModal, setOpenMoreInfoModal] = useState(false);
   const allCategory = useSelector((state) => state.product.allCategory);
@@ -81,7 +84,7 @@ export default function UploadProducts() {
       };
     });
   };
-  const handleUploadCatImage = async (e) => {
+  const handleUploadMoreImage = async (e) => {
     try {
       setImgLoading(true);
       const files = Array.from(e.target.files);
@@ -102,6 +105,18 @@ export default function UploadProducts() {
       setImgLoading(false);
     }
   };
+  const handleUploadThumbnailImage = async (e) => {
+    setThumbnailLoading(true);
+    const file = e.target.files[0];
+    if (!file) return;
+    const { data } = await uploadSingleImage(file);
+    setData((prev) => ({ ...prev, thumbnail: data.data.url }));
+    if (data?.data?.url) {
+      toast.success(data.message);
+      setThumbnailLoading(false);
+    }
+    // axiosToastError(data);
+  };
 
   // add product
   const handleProductSubmit = async (e) => {
@@ -116,6 +131,7 @@ export default function UploadProducts() {
         toast.success(res.message);
         setData({
           name: "",
+          thumbnail: '',
           image: [],
           category_id: [],
           subcategory_id: [],
@@ -156,56 +172,7 @@ export default function UploadProducts() {
               onChange={handleChange}
             />
           </div>
-          {/* <div className="grid gap-1">
-            <label htmlFor="description">
-              Description <span className="text-red-600">*</span>
-            </label>
-            <ReactQuill
-              theme="snow"
-              id="description"
-              name="description"
-              placeholder="Enter product description"
-              modules={{
-                toolbar: [
-                  [{ header: [1, 2, false] }],
-                  ["bold", "italic", "underline", "strike", "blockquote"],
-                  [
-                    { list: "ordered" },
-                    { list: "bullet" },
-                    { indent: "-1" },
-                    { indent: "+1" },
-                  ],
-                  // ["link", "image"],
-                  ["link"],
-                  ["clean"],
-                  // sticky toolbar
-                ],
-              }}
-              formats={[
-                "header",
-                "bold",
-                "italic",
-                "underline",
-                "strike",
-                "blockquote",
-                "list",
-                "bullet",
-                "indent",
-                "link",
-                // "image",
-              ]}
-              value={data.description}
-              onChange={(e) => {
-                setData((prev) => {
-                  return {
-                    ...prev,
-                    description: e,
-                  };
-                });
-              }}
-              className="mb-16 md:mb-14 lg:mb-12"
-            />
-          </div> */}
+
           <div className="grid gap-1">
             <label htmlFor="description">
               Description <span className="text-red-600">*</span>
@@ -229,62 +196,51 @@ export default function UploadProducts() {
             </p>
             <div>
               <div className="bg-blue-50 h-24 rounded border flex items-center justify-center">
-                {imgLoading ? (
+                {thumbnailLoading ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
                 ) : (
                   <>
                     <label className="text-center flex items-center justify-center flex-col cursor-pointer hover:bg-blue-100 p-2 rounded">
                       <FaCloudUploadAlt size={35} className="" />
-                      <p className="text-sm">Upload Image</p>
+                      <p className="text-sm">Upload Thumbnail</p>
                       <input
                         type="file"
-                        name="image"
-                        id="image"
+                        name="thumbnail"
+                        id="thumbnail"
                         className="hidden"
                         accept="image/*"
-                        multiple
-                        onChange={handleUploadCatImage}
+                        onChange={handleUploadThumbnailImage}
                       />
                     </label>
                   </>
                 )}
               </div>
               {/* preview Image */}
-              <div className="flex lg:flex-row flex-col gap-2">
-                {data?.image?.map((img, index) => {
-                  return (
-                    <div
-                      key={index}
-                      className="mt-1 h-20 w-20 bg-blue-50 rounded border cursor-pointer relative group"
-                    >
-                      <img
-                        src={img}
-                        alt="product"
-                        className="h-full w-full object-cover"
-                        onClick={() => setViewImage(img)}
-                      />
+              {data?.thumbnail && (<div className="flex lg:flex-row flex-col gap-2">
+                <div className="mt-1 h-20 w-20 bg-blue-50 rounded border cursor-pointer relative group">
+                    <img
+                      src={data?.thumbnail}
+                      alt="product"
+                      className="h-full w-full object-cover"
+                      onClick={() => setViewThumbnail(data?.thumbnail)}
+                    />
                       <div>
                         <button
                           onClick={() => {
-                            const newImg = data.image.filter(
-                              (image) => image !== img
-                            );
-                            setData((prev) => {
+                            setData((prev)=>{
                               return {
                                 ...prev,
-                                image: newImg,
-                              };
-                            });
+                                thumbnail: '',
+                              }
+                            })
                           }}
                           className="absolute bottom-0 right-0 p-1 bg-red-500 rounded hidden group-hover:block"
                         >
                           <FaTrash size={14} className="text-white" />
                         </button>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                </div>
+              </div>)}
             </div>
           </div>
           <div className="grid gap-1">
@@ -307,7 +263,7 @@ export default function UploadProducts() {
                         className="hidden"
                         accept="image/*"
                         multiple
-                        onChange={handleUploadCatImage}
+                        onChange={handleUploadMoreImage}
                       />
                     </label>
                   </>
@@ -688,6 +644,9 @@ export default function UploadProducts() {
       {/* Image Preview Modal */}
       {viewImage && (
         <ViewImage url={viewImage} close={() => setViewImage("")} />
+      )}
+      {viewThumbnail && (
+        <ViewImage url={viewThumbnail} close={()=> setViewThumbnail("")}/>
       )}
       {/* More Info Modal */}
 

@@ -7,6 +7,7 @@ export async function storeProduct(req, res) {
     const {
       name,
       image,
+      thumbnail,
       category_id,
       subcategory_id,
       brand_id,
@@ -19,6 +20,7 @@ export async function storeProduct(req, res) {
     } = req.body;
     if (
       !name ||
+      !thumbnail ||
       !image[0] ||
       !category_id[0] ||
       !subcategory_id[0] ||
@@ -40,6 +42,7 @@ export async function storeProduct(req, res) {
         trim: true,
         lower: true,
       }),
+      thumbnail,
       image,
       category_id,
       subCategory_id: subcategory_id,
@@ -56,7 +59,6 @@ export async function storeProduct(req, res) {
       .status(201)
       .json({ message: "Product created", success: true, error: false });
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .json({ message: error.message, success: false, error: true });
@@ -107,7 +109,7 @@ export async function getProducts(req, res) {
 export async function getCategoryProducts(req, res) {
   try {
     const { id } = req.params;
-    const products = await Product.find({ category_id: { $in: id } })
+    const products = await Product.find({ category_id: { $in: id }, status: true })
       .sort({ createdAt: -1 })
       .limit(30);
 
@@ -121,9 +123,53 @@ export async function getCategoryProducts(req, res) {
 }
 
 // get product by category and subcategory id
+// export async function getProductByCatAndSubCat(req, res) {
+//   try {
+//     const { category_id, subcategory_id, page, limit } = req.body;
+//     if (!category_id || !subcategory_id) {
+//       return res.status(400).json({
+//         message: "category_id and subcategory_id are required",
+//         success: false,
+//         error: true,
+//       });
+//     }
+//     if (!page) {
+//       page = 1;
+//     }
+//     if (!limit) {
+//       limit = 10;
+//     }
+//     const query = {
+//       category_id: { $in: category_id },
+//       subCategory_id: { $in: subcategory_id },
+//       status: true
+//     };
+//     const skip = (page - 1) * limit;
+//     const [data, total] = await Promise.all([
+//       Product.find(query)
+//       .sort({ createdAt: -1 })
+//       .skip(skip)
+//       .limit(limit),
+//       Product.countDocuments(query),
+//     ]);
+//     return res.status(200).json({
+//       data,
+//       total,
+//       page: Math.ceil(total / limit),
+//       success: true,
+//       error: false,
+//     });
+//   } catch (error) {
+//     return res
+//       .status(500)
+//       .json({ message: error.message, success: false, error: true });
+//   }
+// }
 export async function getProductByCatAndSubCat(req, res) {
   try {
-    const { category_id, subcategory_id, page, limit } = req.body;
+    const { category_id, subcategory_id, page = 1, limit = 10, sortBy = "newest" } = req.body;
+
+    // Validate required fields
     if (!category_id || !subcategory_id) {
       return res.status(400).json({
         message: "category_id and subcategory_id are required",
@@ -131,35 +177,49 @@ export async function getProductByCatAndSubCat(req, res) {
         error: true,
       });
     }
-    if (!page) {
-      page = 1;
-    }
-    if (!limit) {
-      limit = 10;
-    }
+
     const query = {
       category_id: { $in: category_id },
       subCategory_id: { $in: subcategory_id },
+      status: true,
     };
+
+    const sortOptions = {
+      newest: { createdAt: -1 },
+      discount: { discount: -1 }, 
+      priceLowToHigh: { price: 1 },
+      priceHighToLow: { price: -1 }, 
+      rating: { rating: -1 },
+      name: { name: 1 }, 
+    };
+
+    const sortCriteria = sortOptions[sortBy] || sortOptions.newest;
+
     const skip = (page - 1) * limit;
-    const [data, dataCount] = await Promise.all([
-      Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit),
+
+    const [data, total] = await Promise.all([
+      Product.find(query)
+        .sort(sortCriteria)
+        .skip(skip)
+        .limit(limit),
       Product.countDocuments(query),
     ]);
+
     return res.status(200).json({
       data,
-      total: dataCount,
-      page: Math.ceil(dataCount / limit),
+      total,
+      totalPages: Math.ceil(total / limit),
+      page,
       success: true,
       error: false,
     });
   } catch (error) {
-    console.log(error);
     return res
       .status(500)
       .json({ message: error.message, success: false, error: true });
   }
 }
+
 
 // get single product by id
 export async function getProductById(req, res) {
@@ -243,26 +303,29 @@ export async function deleteProduct(req, res) {
   }
 }
 
-//product search
+// Product search
 export async function searchProduct(req, res) {
   try {
-    const { search = "", page, limit } = req.query;
-    if (!page) {
-      page = 1;
-    }
-    if (!limit) {
-      limit = 10;
-    }
-    //search product name, description regex
-    const query = search.trim() ? { $text: { $search: search.trim() } } : {};
+    const { search = "", page = 1, limit = 10 } = req.query;
 
-    const skip = (page - 1) * limit;
+    // Ensure page and limit are integers
+    const currentPage = parseInt(page, 10);
+    const itemsPerPage = parseInt(limit, 10);
+
+    // Build query object
+    const query = search.trim()
+      ? {
+          $and: [{ $text: { $search: search.trim() } }, { status: true }],
+        }
+      : { status: true };
+
+    const skip = (currentPage - 1) * itemsPerPage;
 
     const [data, dataCount] = await Promise.all([
       Product.find(query)
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit)
+        .limit(itemsPerPage)
         .populate("category_id", ["name", "status"])
         .populate("subCategory_id", "name")
         .populate("brand_id", "name"),
@@ -275,9 +338,36 @@ export async function searchProduct(req, res) {
       success: true,
       data: data,
       totalCount: dataCount,
-      totalPage: Math.ceil(dataCount / limit),
-      page: page,
-      limit: limit,
+      totalPage: Math.ceil(dataCount / itemsPerPage),
+      page: currentPage,
+      limit: itemsPerPage,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message, success: false, error: true });
+  }
+}
+
+// update product status
+export async function UpdateProductStatus(req, res) {
+  try {
+    const { id, status } = req.body;
+    if (!id) {
+      return res.status(400).json({
+        message: "Category id required",
+        error: true,
+        success: false,
+      });
+    }
+    const productStatus = await Product.findByIdAndUpdate({_id: id}, {
+      status: status
+    }, {new:true})
+    return res.json({
+      message: "Product Status Update",
+      error: false,
+      success: true,
+      data: productStatus
     });
   } catch (error) {
     return res

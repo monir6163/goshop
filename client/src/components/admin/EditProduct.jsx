@@ -9,13 +9,14 @@ import apiSummary from "../../api/api";
 import { Axios } from "../../api/axios";
 import { setAllBrand } from "../../redux/productSlice";
 import { axiosToastError } from "../../utils/axiosToastError";
-import { uploadImage } from "../../utils/UploadImage";
+import { uploadImage, uploadSingleImage } from "../../utils/UploadImage";
 import AddMoreInfo from "./AddMoreInfo";
 import UploadBrandModal from "./UploadBrandModal";
 import ViewImage from "./ViewImage";
 export default function EditProduct({ close, pdata, fetchProducts }) {
   const [data, setData] = useState({
     name: pdata?.name,
+    thumbnail: pdata?.thumbnail,
     image: pdata?.image,
     category_id: pdata?.category_id,
     subcategory_id: pdata?.subCategory_id,
@@ -28,6 +29,8 @@ export default function EditProduct({ close, pdata, fetchProducts }) {
     more_info: pdata?.more_info || {},
   });
   const [imgLoading, setImgLoading] = useState(false);
+  const [thumbnailLoading, setThumbnailLoading] = useState(false);
+  const [viewThumbnail, setViewThumbnail] = useState("");
   const [loading, setLoading] = useState(false);
   const [openBrandModal, setOpenBrandModal] = useState(false);
   const [selectCategory, setSelectCategory] = useState("");
@@ -100,6 +103,19 @@ export default function EditProduct({ close, pdata, fetchProducts }) {
     } finally {
       setImgLoading(false);
     }
+  };
+
+  const handleUploadThumbnailImage = async (e) => {
+    setThumbnailLoading(true);
+    const file = e.target.files[0];
+    if (!file) return;
+    const { data } = await uploadSingleImage(file);
+    setData((prev) => ({ ...prev, thumbnail: data.data.url }));
+    if (data?.data?.url) {
+      toast.success(data.message);
+      setThumbnailLoading(false);
+    }
+    // axiosToastError(data);
   };
 
   // add product
@@ -182,6 +198,59 @@ export default function EditProduct({ close, pdata, fetchProducts }) {
                   onChange={handleChange}
                 />
               </div>
+              <div className="grid gap-1">
+            <p>
+              Thumbnail Image <span className="text-red-600">*</span>
+            </p>
+            <div>
+              <div className="bg-blue-50 h-24 rounded border flex items-center justify-center">
+                {thumbnailLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+                ) : (
+                  <>
+                    <label className="text-center flex items-center justify-center flex-col cursor-pointer hover:bg-blue-100 p-2 rounded">
+                      <FaCloudUploadAlt size={35} className="" />
+                      <p className="text-sm">Upload Thumbnail</p>
+                      <input
+                        type="file"
+                        name="thumbnail"
+                        id="thumbnail"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleUploadThumbnailImage}
+                      />
+                    </label>
+                  </>
+                )}
+              </div>
+              {/* preview Image */}
+              {data?.thumbnail && (<div className="flex lg:flex-row flex-col gap-2">
+                <div className="mt-1 h-20 w-20 bg-blue-50 rounded border cursor-pointer relative group">
+                    <img
+                      src={data?.thumbnail}
+                      alt="product"
+                      className="h-full w-full object-cover"
+                      onClick={() => setViewThumbnail(data?.thumbnail)}
+                    />
+                      <div>
+                        <button
+                          onClick={() => {
+                            setData((prev)=>{
+                              return {
+                                ...prev,
+                                thumbnail: '',
+                              }
+                            })
+                          }}
+                          className="absolute bottom-0 right-0 p-1 bg-red-500 rounded hidden group-hover:block"
+                        >
+                          <FaTrash size={14} className="text-white" />
+                        </button>
+                      </div>
+                </div>
+              </div>)}
+            </div>
+          </div>
               <div>
                 <p>
                   Image <span className="text-red-600">*</span>
@@ -588,6 +657,9 @@ export default function EditProduct({ close, pdata, fetchProducts }) {
           {/* Image Preview Modal */}
           {viewImage && (
             <ViewImage url={viewImage} close={() => setViewImage("")} />
+          )}
+          {viewThumbnail && (
+            <ViewImage url={viewThumbnail} close={()=> setViewThumbnail("")}/>
           )}
           {/* More Info Modal */}
 

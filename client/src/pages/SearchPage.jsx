@@ -7,6 +7,7 @@ import apiSummary from "../api/api";
 import { Axios } from "../api/axios";
 import CardLoading from "../components/CardLoading";
 import CardProduct from "../components/CardProduct";
+import { axiosToastError } from "../utils/axiosToastError";
 
 export default function SearchPage() {
   const [data, setData] = useState([]);
@@ -32,7 +33,7 @@ export default function SearchPage() {
           setTotalPage(res.totalPage);
         }
       } catch (error) {
-        console.error("Error fetching products:", error);
+        axiosToastError(error)
       } finally {
         setLoading(false);
         setInitialLoading(false);
@@ -52,7 +53,7 @@ export default function SearchPage() {
         setTotalPage(res.totalPage);
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      axiosToastError(error);
     } finally {
       setLoading(false);
     }

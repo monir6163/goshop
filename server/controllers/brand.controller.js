@@ -146,3 +146,39 @@ export async function deleteBrand(req, res) {
       .json({ message: error.message, error: true, success: false });
   }
 }
+
+// get brand_id by show products
+export async function getBrandById(req, res) {
+  try {
+    let {id, page, limit } = req.query;
+    if(!page){
+      page = 1;
+    }
+    if(!limit){
+      limit = 10;
+    }
+    const skip = (page-1)*limit;
+    const query = {brand_id: id, status: true};
+    const [data, total] = await Promise.all([
+      Product.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("brand_id" , "name"),
+      Product.countDocuments(query)
+    ])
+    return res.status(200).json({
+      data,
+      total,
+      totalPage: Math.ceil(total / limit),
+      message: "Brand products",
+      error: false,
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: error.message, error: true, success: false });
+  }
+};
