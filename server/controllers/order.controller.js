@@ -44,7 +44,8 @@ export const createCashOrder = async (req, res) => {
     };
 
     const newOrder = await Order.create(orderPayload);
-
+    // update user model orderHistory
+    await UserModel.updateOne({ _id: userId }, { $push: { orderHistory: newOrder._id } });
     // Update product stock
     await Promise.all(
       list_items.map(async (item) => {
@@ -57,6 +58,8 @@ export const createCashOrder = async (req, res) => {
     // Clear user cart
     await UserModel.updateOne({ _id: userId }, { shopping_cart: [] });
     await CartProduct.deleteMany({ user_id: userId });
+
+   
 
     return res.status(200).json({
       message: "Order created successfully",
