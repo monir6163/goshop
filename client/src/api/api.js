@@ -238,6 +238,10 @@ const apiSummary = {
     url: "/order/get-all-orders",
     method: "GET",
   },
+  getAllOrdersByAdmin: {
+    url: "/order/admin-all-orders",
+    method: "GET",
+  },
 
   // Review API
   storeProductReview: {
@@ -246,6 +250,16 @@ const apiSummary = {
   },
   getAllProductReviews: {
     url: "/review/get-reviews-product-id",
+    method: "GET",
+  },
+
+  // Banner API
+  putBannerImage: {
+    url: "/image/upload/banner",
+    method: "PUT",
+  },
+  getBannerImage: {
+    url: "/image/get-banner",
     method: "GET",
   },
 };

@@ -26,6 +26,8 @@ import SearchPage from "../pages/SearchPage";
 import SubCategoryPage from "../pages/SubCategoryPage";
 import UploadProductPage from "../pages/UploadProductPage";
 import BrandProducts from "../pages/BrandProducts";
+import BannerUpload from "../pages/BannerUpload";
+import OrderMange from "../pages/OrderMange";
 
 const router = createBrowserRouter([
   {
@@ -86,6 +88,22 @@ const router = createBrowserRouter([
           {
             path: "address",
             element: <Address />,
+          },
+          {
+            path: "banner",
+            element: (
+              <AdminPermission>
+                <BannerUpload />
+              </AdminPermission>
+            ),
+          },
+          {
+            path: "order-management",
+            element: (
+              <AdminPermission>
+                <OrderMange />
+              </AdminPermission>
+            ),
           },
           {
             path: "category",

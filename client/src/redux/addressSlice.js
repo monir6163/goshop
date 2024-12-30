@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
   addressList: [],
   orders: [],
+  ordersByAdmin: [],
 };
 
 const addressSlice = createSlice({
@@ -15,9 +16,12 @@ const addressSlice = createSlice({
     setOrders: (state, action) => {
       state.orders = [...action.payload];
     },
+    setOrdersByAdmin: (state, action) => {
+      state.ordersByAdmin = [...action.payload];
+    }
   },
 });
 
-export const { setAddressList, setOrders } = addressSlice.actions;
+export const { setAddressList, setOrders, setOrdersByAdmin } = addressSlice.actions;
 
 export default addressSlice.reducer;

@@ -3,7 +3,6 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Pencil, Plus, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { AiFillLike } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import apiSummary from "../../api/api";
 import { Axios } from "../../api/axios";
@@ -125,9 +124,9 @@ export default function ProductBrand() {
       cell: ({ row }) => {
         return (
           <div className="flex gap-2 justify-center">
-            <button className="bg-green-500 p-1 text-white rounded hover:bg-green-600">
+            {/* <button className="bg-green-500 p-1 text-white rounded hover:bg-green-600">
               <AiFillLike size={16} />
-            </button>
+            </button> */}
             <button
               onClick={() => {
                 setEditData(row.original);

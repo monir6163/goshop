@@ -32,7 +32,6 @@ const UserMenu = ({ close }) => {
         navigate("/");
       }
     } catch (error) {
-      console.log(error);
       axiosToastError(error);
     }
   };
@@ -64,6 +63,32 @@ const UserMenu = ({ close }) => {
       <Divider />
 
       <div className="text-sm grid gap-1">
+
+      {isAdmin(user.role) && (
+          <Link
+            onClick={handleClose}
+            to={"/dashboard/banner"}
+            className={`px-2 hover:bg-orange-200 py-1 ${
+              pathName === "/dashboard/banner" ? "bg-orange-200" : ""
+            }`}
+          >
+            Banner
+          </Link>
+        )}
+
+        {isAdmin(user.role) && (
+          <Link
+            onClick={handleClose}
+            to={"/dashboard/order-management"}
+            className={`px-2 hover:bg-orange-200 py-1 ${
+              pathName === "/dashboard/order-management" ? "bg-orange-200" : ""
+            }`}
+          >
+            Order Management
+          </Link>
+        )}
+
+
         {isAdmin(user.role) && (
           <Link
             onClick={handleClose}

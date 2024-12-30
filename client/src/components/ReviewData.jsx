@@ -75,7 +75,7 @@ export default function ReviewData({ productId }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex items-center space-x-4">
             <Rating
-              key={rating}
+              // key={rating}
               onClick={handleRating}
               ratingValue={rating}
               transition

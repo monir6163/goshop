@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import moment from "moment-timezone";
 import CartProduct from "../models/cartProduct.model.js";
 import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
@@ -295,5 +296,78 @@ export const getAllOrders = async(req, res) => {
     });
   }
 }
+
+// get all orders by admin pagination, search, filter by date(today, yesterday, week, month) by default today and limit 10 per page
+
+
+export const getAllOrdersByAdmin = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, search, filter } = req.query;
+    let query = {};
+    if (search) {
+      query = {
+        $or: [
+          { order_id: { $regex: search, $options: "i" } },
+          { payment_type: { $regex: search, $options: "i" } },
+          { payment_status: { $regex: search, $options: "i" } },
+        ],
+      };
+    }
+    if (filter) {
+      const now = moment().tz("Asia/Dhaka").startOf("day");
+      let startDate;
+      switch (filter) {
+        case "today":
+          startDate = now;
+          break;
+        case "yesterday":
+          startDate = now.subtract(1, "days");
+          break;
+        case "week":
+          startDate = now.subtract(7, "days");
+          break;
+        case "month":
+          startDate = now.subtract(30, "days");
+          break;
+        default:
+          startDate = null;
+          break;
+      }
+      query = {
+        ...query,
+        createdAt: {
+          $gte: startDate.toDate(),
+          $lt: moment().tz("Asia/Dhaka").endOf("day").toDate(),
+        },
+      };
+    }
+    const [data, total] = await Promise.all([
+      Order.find(query)
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .sort({ createdAt: -1 })
+        .populate("products.product_id")
+        .populate("delivary_address")
+        .populate("user_id", "name email"),
+      Order.countDocuments(query),
+    ]);
+    return res.status(200).json({
+      message: "Orders fetched successfully",
+      error: false,
+      data,
+      total,
+      totalPages: Math.ceil(total / limit),
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to get orders",
+      error: true,
+      data: null,
+      success: false,
+    });
+  }
+};
+
 
 

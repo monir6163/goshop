@@ -3,7 +3,6 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Pencil, Plus, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { AiFillLike } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import apiSummary from "../../api/api";
 import { Axios } from "../../api/axios";
@@ -138,9 +137,9 @@ export default function SubCategory() {
         return (
           <>
             <div className="flex items-center gap-2">
-              <button className="bg-green-500 p-1 rounded text-white hover:bg-green-600">
+              {/* <button className="bg-green-500 p-1 rounded text-white hover:bg-green-600">
                 <AiFillLike size={14} />
-              </button>
+              </button> */}
               <button
                 onClick={() => {
                   setOpenEditModal(true);

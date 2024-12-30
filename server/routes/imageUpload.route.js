@@ -1,6 +1,8 @@
 import { Router } from "express";
 
 import {
+  getBannerImageController,
+  uploadBannerImageController,
   uploadImageController,
   uploadSingleImageController,
 } from "../controllers/uploadImage.controller.js";
@@ -24,5 +26,10 @@ imgRouter.post(
   upload.single("image"),
   uploadSingleImageController
 );
+
+// banner image upload
+
+imgRouter.put("/upload/banner", authProtect, authorize("Admin"), uploadBannerImageController);
+imgRouter.get("/get-banner", getBannerImageController);
 
 export default imgRouter;

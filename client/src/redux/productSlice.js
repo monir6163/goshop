@@ -7,6 +7,7 @@ const initialState = {
   allBrand: [],
   products: [],
   allCat: [],
+  banner: [],
 };
 
 const productSlice = createSlice({
@@ -33,6 +34,10 @@ const productSlice = createSlice({
     setProducts: (state, action) => {
       state.products = [...action.payload];
     },
+
+    setBanner: (state, action) => {
+      state.banner = [...action.payload];
+    }
   },
 });
 
@@ -43,6 +48,7 @@ export const {
   setLoadingCategory,
   setGetAllCategory,
   setProducts,
+  setBanner,
 } = productSlice.actions;
 
 export default productSlice.reducer;

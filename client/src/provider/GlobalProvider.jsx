@@ -7,10 +7,11 @@ import { useDispatch, useSelector } from "react-redux";
 import apiSummary from "../api/api";
 import { Axios } from "../api/axios";
 import featchCartItems from "../api/featchCartItems";
-import { setAddressList, setOrders } from "../redux/addressSlice";
+import { setAddressList, setOrders, setOrdersByAdmin } from "../redux/addressSlice";
 import { handleAddItemCart } from "../redux/cartProductSlice";
 import { axiosToastError } from "../utils/axiosToastError";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
+import { setBanner } from "../redux/productSlice";
 
 export const GlobalContext = createContext(null);
 
@@ -94,6 +95,31 @@ function GlobalProvider({ children }) {
     }
   };
 
+  // get banner data
+  const fetchBannerData = async () => {
+    try {
+      const { data } = await Axios({
+        ...apiSummary.getBannerImage,
+      });
+      // console.log(data?.data);
+      dispatch(setBanner(data?.data));
+    } catch (error) {
+      return error;
+    }
+  };
+
+  // get all orders admin
+  const fetchAllOrdersAdmin = async () => {
+    try {
+      const { data } = await Axios({
+        ...apiSummary.getAllOrdersByAdmin,
+      });
+      dispatch(setOrdersByAdmin(data?.data));
+    } catch (error) {
+      return error;
+    }
+  };
+
 
 
   //after logout clear
@@ -101,6 +127,8 @@ function GlobalProvider({ children }) {
     featchCartData();
     fetchAddressData();
     fetchAllOrders();
+    fetchBannerData();
+    fetchAllOrdersAdmin();
     dispatch(handleAddItemCart([]));
   }, [user]);
   // calculate total qty and price
@@ -122,6 +150,9 @@ function GlobalProvider({ children }) {
     setToatalPric(price);
   }, [cartItem]);
 
+  const bannerData = useSelector((state) => state?.product?.banner);
+  const orderDataAdmin = useSelector((state) => state?.address?.ordersByAdmin);
+
   return (
     <GlobalContext.Provider
       value={{
@@ -137,6 +168,9 @@ function GlobalProvider({ children }) {
         allOrders,
         fetchAddressData,
         fetchAllOrders,
+        fetchBannerData,
+        bannerData,
+        orderDataAdmin,
       }}
     >
       {children}

@@ -9,4 +9,4 @@
 7. category wise product infinite loader and filter (low, high price, Aphabetic(A-Z, Z-A)) // done
 8. product single page image hover product zoom view // skip
 9. brand wise all product showing // done
-10. slider image dynamic
+10. slider image dynamic // done
