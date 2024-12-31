@@ -154,7 +154,7 @@ export default function Category() {
                   type="checkbox"
                   title="Show on home"
                   onChange={() => handleCheck(cat._id, cat.showOnHome)}
-                  checked={cat?.showOnHome}
+                  checked={cat?.showOnHome === true}
                 />
                 <button
                   onClick={() => {

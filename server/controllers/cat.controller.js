@@ -218,16 +218,16 @@ export async function updateCategoryShowOnHome(req, res) {
     }
 
     // check category exist or not
-    const check = await DynamicShow.find();
+    const check = await DynamicShow.find({ category_id: id });
     if (check.length > 0) {
-      await DynamicShow.findOneAndUpdate(
+      const upd = await DynamicShow.findOneAndUpdate(
         { category_id: id },
         {
           showOnHome: showOnHome,
         },
         { new: true }
       );
-      await Category.findByIdAndUpdate(
+      const cat = await Category.findByIdAndUpdate(
         id,
         {
           showOnHome: showOnHome,
@@ -239,6 +239,7 @@ export async function updateCategoryShowOnHome(req, res) {
         category_id: id,
         showOnHome: showOnHome,
       });
+      await Category.findByIdAndUpdate(id, { showOnHome: showOnHome }, { new: true });
     }
     return res.status(200).json({
       message: "category show On Home",
