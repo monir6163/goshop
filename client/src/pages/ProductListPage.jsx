@@ -119,12 +119,12 @@ export default function ProductListPage() {
 
         {/* Product list */}
         <div>
-          <div className="bg-white shadow-md p-4 flex justify-between">
+          <div className="bg-white shadow-md p-4 flex gap-2 flex-col lg:flex-row lg:justify-between">
             <h3 className="capitalize text-sm font-medium md:font-semibold">
               {subCatName === "undefined" ? "No Sub Category" : subCatName}
             </h3>
             <div className="flex gap-2 items-center">
-            <div className="text-gray-500 text-sm font-medium">Sort by:</div>
+            <div className="text-gray-500 hidden lg:block text-sm font-medium">Sort by:</div>
               <select
                 name="sort"
                 id="sort"

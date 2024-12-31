@@ -42,7 +42,7 @@ export default function Address() {
               key={i}
               className={`rounded border border-slate-300 p-4 hover:border-green-500 transition-all hover:shadow-md
           flex items-center gap-4 hover:bg-green-50
-              
+              ${address?.status === false && "hidden"}
           `}
             >
               <div className="w-full">

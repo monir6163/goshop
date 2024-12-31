@@ -81,12 +81,12 @@ export default function CheckoutPage() {
   };
 
   const handleStripePayment = async()=>{
+    if (!selectedAddress) return toast.error("Please select an address");
     try {
      
       setStripeLoadin(true);
       const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
       const loadStripePromise = await loadStripe(stripePublicKey)
-      if (!selectedAddress) return toast.error("Please select an address");
       toast.loading("Please Wait");
       const res = await Axios({
         ...apiSummary.createStripeOrder,
@@ -125,9 +125,7 @@ export default function CheckoutPage() {
                     className={`rounded border border-slate-300 p-4 hover:border-green-500 transition-all hover:shadow-md
                     flex items-center gap-4 hover:bg-green-50 
                     ${
-                      address?.status
-                        ? "cursor-pointer"
-                        : "cursor-not-allowed opacity-30"
+                      address?.status === false && "hidden"
                     }
                     `}
                   >

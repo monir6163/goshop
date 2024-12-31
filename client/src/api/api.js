@@ -242,6 +242,14 @@ const apiSummary = {
     url: "/order/admin-all-orders",
     method: "GET",
   },
+  updateOrderStatus: {
+    url: "/order/update-order-status",
+    method: "POST",
+  },
+  getOrderDetails: {
+    url: "/order/view-order",
+    method: "GET",
+  },
 
   // Review API
   storeProductReview: {

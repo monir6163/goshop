@@ -5,6 +5,7 @@ import Order from "../models/order.model.js";
 import Product from "../models/product.model.js";
 import UserModel from "../models/user.model.js";
 import stripe from "../config/stripe.js";
+import sendMail from "../config/node.mailer.js";
 export const pricewithDiscount = (price, dis = 1) => {
   const discountAmout = Math.ceil((Number(price) * Number(dis)) / 100);
   const actualPrice = Number(price) - Number(discountAmout);
@@ -60,7 +61,39 @@ export const createCashOrder = async (req, res) => {
     await UserModel.updateOne({ _id: userId }, { shopping_cart: [] });
     await CartProduct.deleteMany({ user_id: userId });
 
-   
+    const user = await UserModel.findOne({ _id: userId});
+    // Send invoice
+    await sendMail({
+      sendTo: user?.email,
+      subject: "Order Confirmation",
+      html: `
+      <h1>Order Confirmation</h1>
+      <p>Order ID: ${newOrder.order_id}</p>
+      <p>Date: ${moment(newOrder.createdAt).format("DD-MM-YYYY")}</p>
+      <table>
+        <tr>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
+        ${list_items
+          .map(
+            (item) => `
+          <tr>
+            <td>${item.product_id.name}</td>
+            <td>${item.qty}</td>
+            <td>$${pricewithDiscount(item.product_id.price, item.product_id.discount)}</td>
+            <td>$${pricewithDiscount(item.product_id.price, item.product_id.discount) * item.qty}</td>
+          </tr>
+        `
+          )
+          .join("")}
+      </table>
+      <h3>Total: $${totalAmount}</h3>
+      <p>Thank you for your purchase! If you have any questions, contact us at ${process.env.AUTH_EMAIL}.</p>
+      `,
+    });
 
     return res.status(200).json({
       message: "Order created successfully",
@@ -299,7 +332,6 @@ export const getAllOrders = async(req, res) => {
 
 // get all orders by admin pagination, search, filter by date(today, yesterday, week, month) by default today and limit 10 per page
 
-
 export const getAllOrdersByAdmin = async (req, res) => {
   try {
     const { page = 1, limit = 10, search, filter } = req.query;
@@ -362,6 +394,77 @@ export const getAllOrdersByAdmin = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: error.message || "Failed to get orders",
+      error: true,
+      data: null,
+      success: false,
+    });
+  }
+};
+
+// order status update by admin only cash on delivery
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+    console.log("update order", orderId, status);
+    const order = await Order.findOne({ order_id: orderId });
+    if (!order) {
+      return res.status(404).json({
+        message: "Order not found",
+        error: true,
+        data: null,
+        success: false,
+      });
+    }
+    if (order.payment_type === "Cash on delivery") {
+      order.payment_status = status;
+      await order.save();
+      return res.status(200).json({
+        message: "Order status updated successfully",
+        error: false,
+        data: order,
+        success: true,
+      });
+    } else {
+      return res.status(400).json({
+        message: "Order status can't be updated",
+        error: true,
+        data: null,
+        success: false,
+      });
+    }
+  }
+  catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to update order status",
+      error: true,
+      data: null,
+      success: false,
+    });
+  }
+}
+
+// order details by order id
+export const getOrderDetails = async (req, res) => {
+  try {
+    const { orderId } = req.query;
+    const order = await Order.findOne({ order_id: orderId }).populate("products.product_id").populate("delivary_address").populate("user_id", "name email");
+    if (!order) {
+      return res.status(404).json({
+        message: "Order not found",
+        error: true,
+        data: null,
+        success: false,
+      });
+    }
+    return res.status(200).json({
+      message: "Order details fetched successfully",
+      error: false,
+      data: order,
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Failed to get order details",
       error: true,
       data: null,
       success: false,

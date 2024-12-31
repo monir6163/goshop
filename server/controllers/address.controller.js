@@ -131,12 +131,14 @@ export async function deleteAddress(req, res) {
         error: true,
       });
     }
-    await Address.findByIdAndDelete(id);
-    // remove address from user
-    await UserModel.updateOne(
-      { address_details: id },
-      { $pull: { address_details: id } }
-    );
+    // update only status to false
+    await Address.findByIdAndUpdate(id, { status: false });
+    // await Address.findByIdAndDelete(id);
+    // // remove address from user
+    // await UserModel.updateOne(
+    //   { address_details: id },
+    //   { $pull: { address_details: id } }
+    // );
     return res.status(200).json({
       message: "Address deleted successfully",
       success: true,

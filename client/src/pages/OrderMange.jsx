@@ -2,22 +2,27 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment-timezone";
-import { Pencil, Trash } from "lucide-react";
+import { Trash } from "lucide-react";
+import { FaEye } from "react-icons/fa";
 import { createColumnHelper } from "@tanstack/react-table";
 import OrderTable from "../components/admin/OrderTable";
 import { Axios } from "../api/axios";
 import apiSummary from "../api/api";
 import { setOrdersByAdmin } from "../redux/addressSlice";
 import LoadingSpinner from "../utils/LoadingSpinner";
+import { axiosToastError } from "../utils/axiosToastError";
+import toast from "react-hot-toast";
+import ViewOrderModal from "../components/admin/ViewOrderModal";
 
 const columnHelper = createColumnHelper();
 
 export default function OrderManage() {
   const orderData = useSelector((state) => state?.address?.ordersByAdmin);
   const dispatch = useDispatch();
-
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [viewOrder, setViewOrder] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("");
   const [loading, setLoading] = useState(true); // Main loader
@@ -37,7 +42,7 @@ export default function OrderManage() {
       setTotalPages(data.totalPages);
       dispatch(setOrdersByAdmin(data?.data));
     } catch (error) {
-      console.error(error);
+      axiosToastError(error);
     } finally {
       if (isFilterAction) setIsLoadingFilter(false);
       else setLoading(false);
@@ -94,9 +99,45 @@ export default function OrderManage() {
     }
   };
 
+const handleOrderStatus = async (id,status) => {
+  try {
+    const { data:update } = await Axios({
+      ...apiSummary.updateOrderStatus,
+      data: { orderId: id, status },
+    });
+    if (update.success) {
+      toast.success(update.message);
+      fetchAllOrdersAdmin();
+    }
+  } catch (error) {
+    axiosToastError(error);
+  }
+}
+
   const column = [
     columnHelper.accessor("order_id", { header: "Order ID" }),
-    columnHelper.accessor("payment_status", { header: "Payment Status" }),
+    columnHelper.accessor("payment_status", { header: "Payment Status", cell: ({ row }) => (
+      <>
+      {row.original.payment_type === "Cash on delivery" ? (
+        <select className="border p-1 rounded text-sm"
+        value={row.original.payment_status} // Controlled value
+            onChange={(e) =>
+              handleOrderStatus(row.original.order_id, e.target.value) // Trigger API call directly
+            }>
+          {/* default showing payment status */}
+          <option value="pending" selected={row.original.payment_status === "pending"}>Pending</option>
+          <option value='confirmed' selected={row.original.payment_status === "confirmed"}>Confirmed</option>
+          <option value='processing' selected={row.original.payment_status === "processing"}>Processing</option>
+          <option value='dispatched' selected={row.original.payment_status === "dispatched"}>Dispatched</option>
+          <option value='delivered' selected={row.original.payment_status === "delivered"}>Delivered</option>
+          <option value='cancelled' selected={row.original.payment_status === "cancelled"}>Cancelled</option>
+
+      </select>
+      ):(
+        row.original.payment_status === "paid" && <span className="text-green-500">Paid</span>
+      )}
+      </>
+    )}),
     columnHelper.accessor("payment_type", { header: "Payment Type" }),
     columnHelper.accessor("createdAt", {
       header: "Order Date",
@@ -108,8 +149,13 @@ export default function OrderManage() {
       header: "Action",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <button className="bg-yellow-500 p-1 rounded text-white hover:bg-yellow-600">
-            <Pencil size={14} />
+          <button
+          onClick={() => {
+            setViewOrder(row.original);
+            setOpenModal(true);
+          }}
+          className="bg-green-500 p-1 rounded text-white hover:bg-green-600">
+            <FaEye size={14} />
           </button>
           <button className="bg-red-500 p-1 rounded text-white hover:bg-red-600">
             <Trash size={14} />
@@ -178,6 +224,12 @@ export default function OrderManage() {
           </button>
         </div>
       )}
+
+      {
+        openModal && (
+          <ViewOrderModal close={() => setOpenModal(false)} order={viewOrder} />
+        )
+      }
     </>
   );
 }
