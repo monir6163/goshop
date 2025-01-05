@@ -21,8 +21,18 @@ export async function registerUser(req, res) {
 
     const user = await UserModel.findOne({ email: email });
     if (user) {
+      // send email for verify email
+      const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?code=${user?._id}`;
+      await sendMail({
+        sendTo: user?.email,
+        subject: "verify email from mern-ecom",
+        html: verifyEmailTemplate({
+          name: user?.name,
+          url: verifyUrl,
+        }),
+      });
       return res.status(500).json({
-        message: "User already exist this email",
+        message: "User already exist ! verify email sent to your email",
         error: true,
         success: false,
       });
