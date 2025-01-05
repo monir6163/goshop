@@ -63,6 +63,15 @@ export async function emailVerify(req, res) {
         .status(404)
         .json({ message: "Invalid Token", error: true, success: false });
     }
+
+    if (user.verify_email === true) {
+      return res.status(400).json({
+        message: "Email already verify",
+        error: true,
+        success: false,
+      });
+    }
+
     await UserModel.updateOne({ _id: code }, { verify_email: true });
     return res
       .status(200)

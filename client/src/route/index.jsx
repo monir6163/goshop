@@ -28,6 +28,7 @@ import UploadProductPage from "../pages/UploadProductPage";
 import BrandProducts from "../pages/BrandProducts";
 import BannerUpload from "../pages/BannerUpload";
 import OrderMange from "../pages/OrderMange";
+import EmailVerify from "../pages/EmailVerify";
 
 const router = createBrowserRouter([
   {
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
       {
         path: "reset-password",
         element: <ResetPassword />,
+      },
+      {
+        path: 'verify-email',
+        element: <EmailVerify />,
       },
       {
         path: "user",

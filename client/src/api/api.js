@@ -45,6 +45,10 @@ const apiSummary = {
     url: "/user/logout",
     method: "POST",
   },
+  verifyEmail: {
+    url: "/user/verify-email",
+    method: "POST",
+  },
 
   // Image Upload API
   uploadImage: {
@@ -230,9 +234,9 @@ const apiSummary = {
     url: "/order/cash-on-delivery",
     method: "POST",
   },
-  createStripeOrder:{
-    url:"order/stripe-payment",
-    method:"POST",
+  createStripeOrder: {
+    url: "order/stripe-payment",
+    method: "POST",
   },
   getAllOrders: {
     url: "/order/get-all-orders",
